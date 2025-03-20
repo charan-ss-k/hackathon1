@@ -80,9 +80,8 @@ const FormShare = ({ formId, formTitle }: FormShareProps) => {
     const publicDatabase = JSON.parse(publicDatabaseJson);
 
     if (checked) {
-      // Replace or add the current form in publicDatabase
-      const updatedPublicDatabase = publicDatabase.filter((f: any) => f.id !== formId);
-      updatedPublicDatabase.push(form);
+      // Clear the publicDatabase and add only the current form
+      const updatedPublicDatabase = [{ id: formId, title: formTitle }];
       localStorage.setItem("publicDatabase", JSON.stringify(updatedPublicDatabase));
 
       toast({
@@ -90,9 +89,8 @@ const FormShare = ({ formId, formTitle }: FormShareProps) => {
         description: "Your form is now publicly accessible",
       });
     } else {
-      // Remove the current form from publicDatabase
-      const updatedPublicDatabase = publicDatabase.filter((f: any) => f.id !== formId);
-      localStorage.setItem("publicDatabase", JSON.stringify(updatedPublicDatabase));
+      // Clear the publicDatabase when the form is unpublished
+      localStorage.setItem("publicDatabase", JSON.stringify([]));
 
       toast({
         title: "Form unpublished",
