@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -25,12 +24,33 @@ const FormShare = ({ formId, formTitle }: FormShareProps) => {
   const [isPublic, setIsPublic] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [formExists, setFormExists] = useState(false);
 
-  // Use the correct path format for Vercel deployments
-  // This ensures the URL works regardless of base path configuration
   const shareableLink = `${window.location.origin}/form/${formId}`;
 
+  useEffect(() => {
+    // Check if the form exists in localStorage
+    const existingFormsJson = localStorage.getItem("formDatabase") || "[]";
+    const existingForms = JSON.parse(existingFormsJson);
+    const form = existingForms.find((f: any) => f.id === formId);
+
+    if (form) {
+      setFormExists(true);
+    } else {
+      setFormExists(false);
+    }
+  }, [formId]);
+
   const handleCopyLink = () => {
+    if (!formExists) {
+      toast({
+        variant: "destructive",
+        title: "Form not found",
+        description: "The form you are trying to share does not exist.",
+      });
+      return;
+    }
+
     navigator.clipboard.writeText(shareableLink);
     setCopied(true);
     toast({
@@ -42,6 +62,16 @@ const FormShare = ({ formId, formTitle }: FormShareProps) => {
 
   const handlePublishToggle = (checked: boolean) => {
     setIsPublic(checked);
+
+    if (!formExists) {
+      toast({
+        variant: "destructive",
+        title: "Form not found",
+        description: "The form you are trying to publish does not exist.",
+      });
+      return;
+    }
+
     // In a real app, update form status in the backend
     if (checked) {
       toast({
@@ -92,12 +122,12 @@ const FormShare = ({ formId, formTitle }: FormShareProps) => {
                 value={shareableLink}
                 readOnly
                 className="flex-1"
-                disabled={!isPublic}
+                disabled={!isPublic || !formExists}
               />
               <Button
                 size="icon"
                 onClick={handleCopyLink}
-                disabled={!isPublic}
+                disabled={!isPublic || !formExists}
                 className={copied ? "bg-green-600" : ""}
               >
                 {copied ? (
