@@ -66,11 +66,12 @@ const FormShare = ({ formId, formTitle }: FormShareProps) => {
     const existingFormsJson = localStorage.getItem("formDatabase") || "[]";
     const existingForms = JSON.parse(existingFormsJson);
 
-    const form = existingForms.find((f: any) => f.id === formId);
+    let form = existingForms.find((f: any) => f.id === formId);
 
     if (!form) {
-      // Save the form to formDatabase if it doesn't exist
-      existingForms.push({ id: formId, title: formTitle });
+      // Save the current form to formDatabase if it doesn't exist
+      form = { id: formId, title: formTitle };
+      existingForms.push(form);
       localStorage.setItem("formDatabase", JSON.stringify(existingForms));
       setFormExists(true);
     }
@@ -79,19 +80,20 @@ const FormShare = ({ formId, formTitle }: FormShareProps) => {
     const publicDatabase = JSON.parse(publicDatabaseJson);
 
     if (checked) {
-      // Add the form to publicDatabase
-      if (!publicDatabase.some((f: any) => f.id === formId)) {
-        publicDatabase.push({ id: formId, title: formTitle });
-        localStorage.setItem("publicDatabase", JSON.stringify(publicDatabase));
-      }
+      // Replace or add the current form in publicDatabase
+      const updatedPublicDatabase = publicDatabase.filter((f: any) => f.id !== formId);
+      updatedPublicDatabase.push(form);
+      localStorage.setItem("publicDatabase", JSON.stringify(updatedPublicDatabase));
+
       toast({
         title: "Form published",
         description: "Your form is now publicly accessible",
       });
     } else {
-      // Remove the form from publicDatabase
+      // Remove the current form from publicDatabase
       const updatedPublicDatabase = publicDatabase.filter((f: any) => f.id !== formId);
       localStorage.setItem("publicDatabase", JSON.stringify(updatedPublicDatabase));
+
       toast({
         title: "Form unpublished",
         description: "Your form is now private",
