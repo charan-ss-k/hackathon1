@@ -63,22 +63,35 @@ const FormShare = ({ formId, formTitle }: FormShareProps) => {
   const handlePublishToggle = (checked: boolean) => {
     setIsPublic(checked);
 
-    if (!formExists) {
-      toast({
-        variant: "destructive",
-        title: "Form not found",
-        description: "The form you are trying to publish does not exist.",
-      });
-      return;
+    const existingFormsJson = localStorage.getItem("formDatabase") || "[]";
+    const existingForms = JSON.parse(existingFormsJson);
+
+    const form = existingForms.find((f: any) => f.id === formId);
+
+    if (!form) {
+      // Save the form to formDatabase if it doesn't exist
+      existingForms.push({ id: formId, title: formTitle });
+      localStorage.setItem("formDatabase", JSON.stringify(existingForms));
+      setFormExists(true);
     }
 
-    // In a real app, update form status in the backend
+    const publicDatabaseJson = localStorage.getItem("publicDatabase") || "[]";
+    const publicDatabase = JSON.parse(publicDatabaseJson);
+
     if (checked) {
+      // Add the form to publicDatabase
+      if (!publicDatabase.some((f: any) => f.id === formId)) {
+        publicDatabase.push({ id: formId, title: formTitle });
+        localStorage.setItem("publicDatabase", JSON.stringify(publicDatabase));
+      }
       toast({
         title: "Form published",
         description: "Your form is now publicly accessible",
       });
     } else {
+      // Remove the form from publicDatabase
+      const updatedPublicDatabase = publicDatabase.filter((f: any) => f.id !== formId);
+      localStorage.setItem("publicDatabase", JSON.stringify(updatedPublicDatabase));
       toast({
         title: "Form unpublished",
         description: "Your form is now private",
