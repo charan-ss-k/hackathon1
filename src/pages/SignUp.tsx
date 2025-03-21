@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -22,45 +21,30 @@ const SignUp = () => {
     
     try {
       if (name && email && password) {
-        // In a real app, you would register the user with an API
-        // For demo purposes, save to localStorage to simulate a database
-        
-        // Get existing users or initialize empty array
         const existingUsersJson = localStorage.getItem('userDatabase') || '[]';
         const existingUsers = JSON.parse(existingUsersJson);
-        
-        // Check if email is already in use
         if (existingUsers.some((user: any) => user.email.toLowerCase() === email.toLowerCase())) {
           throw new Error("This email is already in use");
         }
-        
-        // Add the new user - all users are publishers
         existingUsers.push({
           name,
           email,
-          password, // In a real app, NEVER store passwords in plain text
+          password,
           role: "publisher"
         });
-        
-        // Save back to localStorage
         localStorage.setItem('userDatabase', JSON.stringify(existingUsers));
-        
-        // Also log the user in
         const userData = {
           name,
           email,
           isAuthenticated: true,
           role: "publisher",
-          sessionExpiry: Date.now() + (30 * 60 * 1000) // 30 minutes
+          sessionExpiry: Date.now() + (30 * 60 * 1000)
         };
-        
         localStorage.setItem('user', JSON.stringify(userData));
-        
         toast({
           title: "Account created",
           description: "Welcome to Pexo Forms!",
         });
-        
         navigate('/');
       } else {
         throw new Error("Please fill in all fields");
