@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,8 +37,15 @@ const FormShare = ({ formId, formTitle }: FormShareProps) => {
 
     if (form) {
       setFormExists(true);
+      
+      // Check if form is already in publicDatabase
+      const publicDatabaseJson = localStorage.getItem("publicDatabase") || "[]";
+      const publicDatabase = JSON.parse(publicDatabaseJson);
+      const isAlreadyPublic = publicDatabase.some((f: any) => f.id === formId);
+      setIsPublic(isAlreadyPublic);
     } else {
       setFormExists(false);
+      setIsPublic(false);
     }
   }, [formId]);
 
@@ -69,28 +77,32 @@ const FormShare = ({ formId, formTitle }: FormShareProps) => {
     let form = existingForms.find((f: any) => f.id === formId);
 
     if (!form) {
-      // Save the current form to formDatabase if it doesn't exist
-      form = { id: formId, title: formTitle };
-      existingForms.push(form);
-      localStorage.setItem("formDatabase", JSON.stringify(existingForms));
-      setFormExists(true);
+      toast({
+        variant: "destructive",
+        title: "Form not found",
+        description: "The form you are trying to share does not exist.",
+      });
+      return;
     }
 
     const publicDatabaseJson = localStorage.getItem("publicDatabase") || "[]";
     const publicDatabase = JSON.parse(publicDatabaseJson);
 
     if (checked) {
-      // Clear the publicDatabase and add only the current form
-      const updatedPublicDatabase = [{ id: formId, title: formTitle }];
-      localStorage.setItem("publicDatabase", JSON.stringify(updatedPublicDatabase));
+      // Add the current form to publicDatabase if not already there
+      if (!publicDatabase.some((f: any) => f.id === formId)) {
+        publicDatabase.push({ id: formId, title: formTitle });
+        localStorage.setItem("publicDatabase", JSON.stringify(publicDatabase));
+      }
 
       toast({
         title: "Form published",
         description: "Your form is now publicly accessible",
       });
     } else {
-      // Clear the publicDatabase when the form is unpublished
-      localStorage.setItem("publicDatabase", JSON.stringify([]));
+      // Remove the form from publicDatabase
+      const updatedPublicDatabase = publicDatabase.filter((f: any) => f.id !== formId);
+      localStorage.setItem("publicDatabase", JSON.stringify(updatedPublicDatabase));
 
       toast({
         title: "Form unpublished",

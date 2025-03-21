@@ -5,13 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
 import { Mail, Lock, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -20,7 +13,6 @@ const SignUp = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("publisher");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -42,12 +34,12 @@ const SignUp = () => {
           throw new Error("This email is already in use");
         }
         
-        // Add the new user
+        // Add the new user - all users are publishers
         existingUsers.push({
           name,
           email,
           password, // In a real app, NEVER store passwords in plain text
-          role
+          role: "publisher"
         });
         
         // Save back to localStorage
@@ -58,14 +50,15 @@ const SignUp = () => {
           name,
           email,
           isAuthenticated: true,
-          role
+          role: "publisher",
+          sessionExpiry: Date.now() + (30 * 60 * 1000) // 30 minutes
         };
         
         localStorage.setItem('user', JSON.stringify(userData));
         
         toast({
           title: "Account created",
-          description: `Welcome to Pexo Forms! You've signed up as a ${role}.`,
+          description: "Welcome to Pexo Forms!",
         });
         
         navigate('/');
@@ -140,18 +133,6 @@ const SignUp = () => {
                     required
                   />
                 </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="role">I want to</Label>
-                <Select value={role} onValueChange={setRole}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="publisher">Create forms (Publisher)</SelectItem>
-                    <SelectItem value="respondent">Fill in forms (Respondent)</SelectItem>
-                  </SelectContent>
-                </Select>
               </div>
             </CardContent>
             <CardFooter className="flex flex-col">

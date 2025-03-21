@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -33,7 +32,7 @@ interface FormPreviewProps {
   formId?: string;
 }
 
-const FormPreview = ({ title, questions, isShared = false, formId }: FormPreviewProps) => {
+const FormPreview = ({ title, questions, isShared = false, formId = "preview" }: FormPreviewProps) => {
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [fileUploads, setFileUploads] = useState<Record<string, File | null>>({});
 
@@ -50,7 +49,6 @@ const FormPreview = ({ title, questions, isShared = false, formId }: FormPreview
         ...prev,
         [questionId]: files[0],
       }));
-      // Store file name in formData for display/validation purposes
       setFormData((prev) => ({
         ...prev,
         [questionId]: files[0].name,
@@ -60,12 +58,9 @@ const FormPreview = ({ title, questions, isShared = false, formId }: FormPreview
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Validate required fields
     const missingFields = questions
       .filter(q => q.required && !formData[q.id])
       .map(q => q.label);
-    
     if (missingFields.length > 0) {
       toast({
         variant: "destructive",
@@ -74,11 +69,9 @@ const FormPreview = ({ title, questions, isShared = false, formId }: FormPreview
       });
       return;
     }
-    
-    // In a real application, we would handle file uploads separately
-    // For now, we'll combine all data and just log it
     const submission = {
-      formId: formId || 'preview',
+      id: `response-${Date.now()}`,
+      formId: formId,
       data: formData,
       files: Object.keys(fileUploads).map(key => ({
         questionId: key,
@@ -88,14 +81,14 @@ const FormPreview = ({ title, questions, isShared = false, formId }: FormPreview
       })),
       submittedAt: new Date().toISOString()
     };
-    
-    console.log("Form submitted:", submission);
+    const responsesJson = localStorage.getItem(`responses_${formId}`) || "[]";
+    const responses = JSON.parse(responsesJson);
+    responses.push(submission);
+    localStorage.setItem(`responses_${formId}`, JSON.stringify(responses));
     toast({
       title: "Form submitted",
       description: "Thank you for your response!",
     });
-    
-    // Reset form
     setFormData({});
     setFileUploads({});
   };

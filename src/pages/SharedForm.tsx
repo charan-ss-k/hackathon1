@@ -35,27 +35,20 @@ const SharedForm = () => {
   }
 
   useEffect(() => {
-    // In a real app, fetch the form data from your backend using the formId
-    // For demo, we'll simulate a form fetching
-    const fetchForm = async () => {
+    const fetchForm = () => {
       try {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Get form from localStorage
+        const formDatabaseJson = localStorage.getItem("formDatabase") || "[]";
+        const formDatabase = JSON.parse(formDatabaseJson);
         
-        // Mock data
-        const mockForm = {
-          id: formId || '1',
-          title: 'Pexo Forms - Sample Survey',
-          questions: [
-            { id: '1', type: 'text', label: 'Name', required: true, options: [] },
-            { id: '2', type: 'email', label: 'Email', required: true, options: [] },
-            { id: '3', type: 'textarea', label: 'Comments', required: false, options: [] },
-            { id: '4', type: 'multiple_choice', label: 'How did you hear about us?', required: false, options: ['Social Media', 'Friend', 'Advertisement', 'Other'] },
-            { id: '5', type: 'file', label: 'Upload your document', required: false, options: [] }
-          ]
-        };
+        // Find the form with the matching ID
+        const foundForm = formDatabase.find((f: Form) => f.id === formId);
         
-        setForm(mockForm);
+        if (foundForm && foundForm.questions) {
+          setForm(foundForm);
+        } else {
+          setError('Form not found');
+        }
       } catch (err) {
         setError('Failed to load form');
         console.error(err);
